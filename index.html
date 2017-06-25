@@ -1,23 +1,26 @@
-<html>
+<!doctype html>
+<html lang="de">
 <head>
-  <title>Heide-Süd :: Gebiete</title>
+  <title>Heide-S&uuml;d :: Gebiete</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <meta name="description" content="Heide-Süd :: Gebiete"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/leaflet.css" />
   <link rel="stylesheet" href="./map.css" />
+  <!--Basic Leaflet, but old version for pop-up feature-->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/leaflet.js"></script>
-  <script src="https://www.mapquestapi.com/sdk/leaflet/v2.2/mq-map.js?key=bA5WISoAPsk5r0GJ3hHGTkAMFEskFOA2"></script>
+  <!--Adding leaflet providers for additional layer selection -->
+  <script src="./leaflet-providers.js"></script>
 </head>
 <body>
 <!-- im head: Leaflet-js update von 0.7.7 nach 1.0.3 -->
 
-
 	<div id="map">
-		
+
 	</div>
-	
+
     <script>
-      // using leafletjs.com and its GeoJSON    
+      // using leafletjs.com and its GeoJSON
     function onEachFeature(feature, layer) {
       // does this feature have a property named title?
       if (feature.properties && feature.properties.title) {
@@ -34,34 +37,35 @@
       if (request.status == 200)
         return request.responseText;
       };
-		
-		// DEBUG - test mit "so sollte es sein txt-datei"
-      //var geoJsonData = JSON.parse(readJSON('geojson.txt'));
+
       var geoJsonData = JSON.parse(readJSON('geojson.php'));
 
-      var mapLayer = MQ.mapLayer(), map;
 
-      map = L.map('map', {
-        layers: mapLayer,
-        //center: [ 54.1924994307394,9.08329010009765 ],  // heide
+      var map = L.map('map', {
         center: [ 54.137486, 9.123950 ], // gebietsmitte
-          zoom: 12
+        zoom: 12
       });
 
-      L.control.layers({
-        'Map': mapLayer,
-        'Hybrid': MQ.hybridLayer(),
-        'Satellite': MQ.satelliteLayer(),
-        'Dark': MQ.darkLayer(),
-            'Light': MQ.lightLayer()
-      }).addTo(map);
+     var defaultLayer = L.tileLayer.provider('OpenStreetMap.Mapnik').addTo(map);
 
+     var baseLayers = {
+			      'OSM': defaultLayer,
+            'OSM b&w': L.tileLayer.provider('OpenStreetMap.BlackAndWhite'),
+            'OpenTopo': L.tileLayer.provider('OpenTopoMap')
+		 };
+
+     L.control.layers(baseLayers).addTo(map);
 
       L.geoJson(geoJsonData, {
           style: function(feature) {
               switch (feature.properties.status) {
-                  case 'ag': return {color: "#0bc619", weight: 2, opacity: 0.9};
-                  case 'nag': return {color: "#ff0000", weight: 2, opacity: 0.9};
+                  case 'ag': return {color: "#0bc619", weight: 3, opacity: 0.7, fillOpacity: 0.1};
+                  case 'nag': return {color: "#ff0000", weight: 3, opacity: 0.7, fillOpacity: 0.1};
+                  case 'crit1': return {color: "#0bc619", weight: 3, opacity: 0.7, fillOpacity: 0.1};
+                  case 'crit2': return {color: "#ffcc00", weight: 3, opacity: 0.7, fillOpacity: 0.1};
+                  case 'crit3': return {color: "#ff6600", weight: 3, opacity: 0.7, fillOpacity: 0.1};
+                  case 'crit4': return {color: "#ff0000", weight: 3, opacity: 0.7, fillOpacity: 0.1};
+                  case 'ges': return {color: "#0000ff", weight: 4, opacity: 0.7, fillOpacity: 0};
               }
           },
           onEachFeature: onEachFeature,
